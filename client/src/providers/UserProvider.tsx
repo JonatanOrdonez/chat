@@ -11,7 +11,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | null>(null);
 
-export function UserProvider({ children }: { children: ComponentChildren }) {
+export const UserProvider = ({ children }: { children: ComponentChildren }) => {
   const [auth, setAuthState] = useState<AuthData | null>(getStoredAuth);
 
   const setAuth = (value: AuthData | null) => {
@@ -30,7 +30,7 @@ export function UserProvider({ children }: { children: ComponentChildren }) {
   );
 }
 
-export function useUser() {
+export const useUser = () => {
   const ctx = useContext(UserContext);
   if (!ctx) throw new Error('useUser must be used within UserProvider');
   return ctx;

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
-import { createRoomService, deleteRoomService, createMessageService, getRoomsService, getMessagesService, getRoomById } from './room.service';
+import { createRoomService, deleteRoomService, getRoomsService, getRoomById } from './room.service';
 import { getUserFromRequest } from '../../middlewares/authMiddleware';
 
 export const getRoomsController = async (_req: Request, res: Response) => {
@@ -32,23 +32,4 @@ export const deleteRoomController = async (req: Request, res: Response) => {
 
   await deleteRoomService(String(id), userId);
   return res.status(204).send();
-};
-
-export const createMessageController = async (req: Request, res: Response) => {
-  const { id: roomId } = req.params;
-  const { content } = req.body;
-  const { id: userId } = getUserFromRequest(req);
-
-  if (!content) {
-    throw Boom.badRequest('Message content is required');
-  }
-
-  const message = await createMessageService(String(roomId), content, userId);
-  return res.status(201).json(message);
-};
-
-export const getMessagesController = async (req: Request, res: Response) => {
-  const { id: roomId } = req.params;
-  const messages = await getMessagesService(String(roomId));
-  return res.json(messages);
 };

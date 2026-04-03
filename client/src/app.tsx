@@ -2,13 +2,14 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "./providers/UserProvider";
 import { AxiosProvider } from "./providers/AxiosProvider";
 import { ToastProvider } from "./providers/ToastProvider";
+import { RoomsProvider } from "./providers/RoomsProvider";
+import { ChatProvider } from "./providers/ChatProvider";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { RoomsPage } from "./pages/RoomsPage";
 import { ChatPage } from "./pages/ChatPage";
-import { RoomProvider } from "./providers/RoomProvider";
 
-function AppRoutes() {
+const AppRoutes = () => {
   const { auth } = useUser();
 
   return (
@@ -23,15 +24,23 @@ function AppRoutes() {
       />
       <Route
         path="/rooms"
-        element={auth ? <RoomsPage /> : <Navigate to="/login" />}
+        element={
+          auth ? (
+            <RoomsProvider>
+              <RoomsPage />
+            </RoomsProvider>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
       />
       <Route
         path="/rooms/:id"
         element={
           auth ? (
-            <RoomProvider>
+            <ChatProvider>
               <ChatPage />
-            </RoomProvider>
+            </ChatProvider>
           ) : (
             <Navigate to="/login" />
           )
@@ -40,9 +49,9 @@ function AppRoutes() {
       <Route path="*" element={<Navigate to={auth ? "/rooms" : "/login"} />} />
     </Routes>
   );
-}
+};
 
-export function App() {
+export const App = () => {
   return (
     <BrowserRouter>
       <UserProvider>
@@ -54,4 +63,4 @@ export function App() {
       </UserProvider>
     </BrowserRouter>
   );
-}
+};

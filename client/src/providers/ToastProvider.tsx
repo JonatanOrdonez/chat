@@ -18,7 +18,7 @@ const ToastContext = createContext<ToastContextType | null>(null);
 
 let nextId = 0;
 
-export function ToastProvider({ children }: { children: ComponentChildren }) {
+export const ToastProvider = ({ children }: { children: ComponentChildren }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const showToast = useCallback((message: string, type: ToastType) => {
@@ -48,7 +48,7 @@ export function ToastProvider({ children }: { children: ComponentChildren }) {
   );
 }
 
-export function useToast() {
+export const useToast = () => {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error('useToast must be used within ToastProvider');
   return ctx;

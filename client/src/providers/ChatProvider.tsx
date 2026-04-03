@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAxios } from "./AxiosProvider";
 import { useToast } from "./ToastProvider";
 
-interface RoomContextType {
+interface ChatContextType {
   messages: Message[];
   room: Room | null;
   loading: boolean;
@@ -15,7 +15,7 @@ interface RoomContextType {
   sendMessage: (content: string) => Promise<void>;
 }
 
-const RoomContext = createContext<RoomContextType>({
+const ChatContext = createContext<ChatContextType>({
   messages: [],
   room: null,
   loading: true,
@@ -23,10 +23,11 @@ const RoomContext = createContext<RoomContextType>({
   sendMessage: async () => {},
 });
 
-interface RoomProviderProps {
+interface ChatProviderProps {
   children: ComponentChildren;
 }
-export function RoomProvider({ children }: RoomProviderProps) {
+
+export const ChatProvider = ({ children }: ChatProviderProps) => {
   const { id: roomId } = useParams<{ id: string }>();
 
   const axios = useAxios();
@@ -121,16 +122,16 @@ export function RoomProvider({ children }: RoomProviderProps) {
   }, [roomId]);
 
   return (
-    <RoomContext.Provider
+    <ChatContext.Provider
       value={{ messages, loading, sending, room, sendMessage }}
     >
       {children}
-    </RoomContext.Provider>
+    </ChatContext.Provider>
   );
-}
+};
 
-export function useRoom() {
-  const ctx = useContext(RoomContext);
-  if (!ctx) throw new Error("useRoom must be used within RoomProvider");
+export const useChat = () => {
+  const ctx = useContext(ChatContext);
+  if (!ctx) throw new Error("useChat must be used within ChatProvider");
   return ctx;
-}
+};

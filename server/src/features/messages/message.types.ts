@@ -1,18 +1,17 @@
 import { Creator } from '../../shared/types/creator';
 
-export type { Creator };
-
-export interface Room {
+export interface Message {
   id: string;
-  name: string;
+  content: string;
+  room_id: string;
   created_by: string;
   created_at: string;
 }
 
-export interface RoomWithCreator {
+export interface MessageWithCreator {
   id: string;
-  name: string;
+  content: string;
+  room_id: string;
   created_at: string;
   created_by: Creator;
 }
-

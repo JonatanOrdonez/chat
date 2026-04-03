@@ -29,7 +29,7 @@ const isTokenExpired = (expiresAt: number): boolean => {
   return Date.now() >= (expiresAt - 30) * 1000;
 };
 
-export function AxiosProvider({ children }: { children: ComponentChildren }) {
+export const AxiosProvider = ({ children }: { children: ComponentChildren }) => {
   const instance = useMemo(() => {
     const baseURL = import.meta.env.VITE_API_URL || "";
     const inst = axios.create({ baseURL });
@@ -75,7 +75,7 @@ export function AxiosProvider({ children }: { children: ComponentChildren }) {
   );
 }
 
-export function useAxios() {
+export const useAxios = () => {
   const ctx = useContext(AxiosContext);
   if (!ctx) throw new Error("useAxios must be used within AxiosProvider");
   return ctx;
