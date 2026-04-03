@@ -1,23 +1,6 @@
 import Boom from '@hapi/boom';
 import { pool } from '../../config/database';
-import { supabase } from '../../config/supabase';
 import { Room, RoomWithCreator } from './room.types';
-
-const broadcastRoomCreated = async (room: RoomWithCreator) => {
-  const channel = supabase.channel('rooms');
-  await channel.httpSend('room-created', room);
-  supabase.removeChannel(channel);
-};
-
-const broadcastRoomDeleted = async (roomId: string) => {
-  const channel = supabase.channel(`room:${roomId}`);
-  await channel.httpSend('room-deleted', {});
-  supabase.removeChannel(channel);
-
-  const globalChannel = supabase.channel('rooms');
-  await globalChannel.httpSend('room-deleted', { roomId });
-  supabase.removeChannel(globalChannel);
-};
 
 const getRawRoomById = async (roomId: string): Promise<Room> => {
   const result = await pool.query<Room>(
@@ -86,9 +69,7 @@ export const createRoomService = async (
     [name, userId]
   );
 
-  const room = result.rows[0];
-  broadcastRoomCreated(room);
-  return room;
+  return result.rows[0];
 };
 
 export const deleteRoomService = async (
@@ -102,5 +83,4 @@ export const deleteRoomService = async (
   }
 
   await pool.query('DELETE FROM public.rooms WHERE id = $1', [roomId]);
-  broadcastRoomDeleted(roomId);
 };

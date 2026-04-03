@@ -4,7 +4,6 @@ import type { ComponentChildren } from "preact";
 import type { Room } from "../types";
 import { useAxios } from "./AxiosProvider";
 import { useToast } from "./ToastProvider";
-import useSupabase from "../hooks/useSupabase";
 
 interface RoomsContextType {
   rooms: Room[];
@@ -31,7 +30,6 @@ interface RoomsProviderProps {
 export const RoomsProvider = ({ children }: RoomsProviderProps) => {
   const axios = useAxios();
   const { showToast } = useToast();
-  const supabase = useSupabase();
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,33 +50,8 @@ export const RoomsProvider = ({ children }: RoomsProviderProps) => {
     }
   };
 
-  const subscribeToRooms = () => {
-    const channel = supabase.channel("rooms");
-    channel
-      .on("broadcast", { event: "room-created" }, (payload) => {
-        const room = payload.payload as Room;
-        setRooms((prev) => {
-          if (prev.some((r) => r.id === room.id)) return prev;
-          return [room, ...prev];
-        });
-      })
-      .on("broadcast", { event: "room-deleted" }, (payload) => {
-        const { roomId } = payload.payload as { roomId: string };
-        setRooms((prev) => prev.filter((r) => r.id !== roomId));
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
   useEffect(() => {
     fetchRooms();
-    const unsubscribe = subscribeToRooms();
-    return () => {
-      unsubscribe();
-    };
   }, []);
 
   const createRoom = async (name: string): Promise<boolean> => {

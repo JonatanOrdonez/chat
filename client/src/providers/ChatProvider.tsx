@@ -2,8 +2,7 @@ import { createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import type { Message, Room } from "../types";
-import useSupabase from "../hooks/useSupabase";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAxios } from "./AxiosProvider";
 import { useToast } from "./ToastProvider";
 
@@ -32,8 +31,6 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
 
   const axios = useAxios();
   const { showToast } = useToast();
-  const supabase = useSupabase();
-  const navigate = useNavigate();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,34 +78,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     }
   };
 
-  const subscribeToMessages = () => {
-    const channel = supabase.channel(`room:${roomId}`);
-
-    channel
-      .on("broadcast", { event: "new-message" }, (payload) => {
-        const message = payload.payload as Message;
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === message.id)) return prev;
-          return [...prev, message];
-        });
-      })
-      .on("broadcast", { event: "room-deleted" }, () => {
-        showToast("Este room ha sido eliminado", "error");
-        navigate("/rooms");
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
   useEffect(() => {
     fetchData();
-    const unsubscribe = subscribeToMessages();
-    return () => {
-      unsubscribe();
-    };
   }, [roomId]);
 
   return (
