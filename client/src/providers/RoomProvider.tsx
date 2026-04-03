@@ -1,12 +1,7 @@
 import { createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
-import type { AuthData, Message, Room } from "../types";
-import {
-  getStoredAuth,
-  setStoredAuth,
-  removeStoredAuth,
-} from "../utils/storage";
+import type { Message, Room } from "../types";
 import useSupabase from "../hooks/useSupabase";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAxios } from "./AxiosProvider";
