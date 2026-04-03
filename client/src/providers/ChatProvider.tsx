@@ -76,8 +76,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     if (!content.trim()) return;
     setSending(true);
     try {
-      await axios.post(`/api/rooms/${roomId}/messages`, {
+      const { data } = await axios.post<Message>(`/api/rooms/${roomId}/messages`, {
         content: content.trim(),
+      });
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === data.id)) return prev;
+        return [...prev, data];
       });
     } catch (err) {
       showToast(
