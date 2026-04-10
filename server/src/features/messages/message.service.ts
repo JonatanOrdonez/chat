@@ -1,5 +1,15 @@
 import { pool } from '../../config/database';
 import { MessageWithCreator } from './message.types';
+import { supabase } from '../../config/supabase';
+
+const broadcastMessage = async (
+  roomId: string,
+  message: MessageWithCreator
+) => {
+  const channel = supabase.channel(`room:${roomId}`);
+  await channel.httpSend('new-message', message);
+  supabase.removeChannel(channel);
+};
 
 export const createMessageService = async (
   roomId: string,
@@ -22,7 +32,9 @@ export const createMessageService = async (
     [content, roomId, userId]
   );
 
-  return result.rows[0];
+  const message = result.rows[0];
+  broadcastMessage(roomId, message);
+  return message;
 };
 
 export const getMessagesService = async (

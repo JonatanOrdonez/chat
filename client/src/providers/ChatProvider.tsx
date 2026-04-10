@@ -2,9 +2,10 @@ import { createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import type { Message, Room } from "../types";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAxios } from "./AxiosProvider";
 import { useToast } from "./ToastProvider";
+import useSupabase from "../hooks/useSupabase";
 
 interface ChatContextType {
   messages: Message[];
@@ -36,6 +37,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [sending, setSending] = useState<boolean>(false);
   const [room, setRoom] = useState<Room | null>(null);
+  const supabase = useSupabase();
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     setLoading(true);
@@ -60,9 +63,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     if (!content.trim()) return;
     setSending(true);
     try {
-      const { data } = await axios.post<Message>(`/api/rooms/${roomId}/messages`, {
-        content: content.trim(),
-      });
+      const { data } = await axios.post<Message>(
+        `/api/rooms/${roomId}/messages`,
+        {
+          content: content.trim(),
+        },
+      );
       setMessages((prev) => {
         if (prev.some((m) => m.id === data.id)) return prev;
         return [...prev, data];
@@ -78,8 +84,30 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     }
   };
 
+  const subscribeToMessages = () => {
+    const channel = supabase.channel(`room:${roomId}`);
+
+    channel
+      .on("broadcast", { event: "new-message" }, (payload) => {
+        const message = payload.payload as Message;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      })
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  };
+
   useEffect(() => {
     fetchData();
+    const unsubscribe = subscribeToMessages();
+    return () => {
+      unsubscribe();
+    };
   }, [roomId]);
 
   return (
